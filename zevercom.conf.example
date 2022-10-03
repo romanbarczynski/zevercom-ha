@@ -1,0 +1,4 @@
+mqtt_server: mqtt
+topic: zevercom
+device_id: '0xdeadbeef00000001'
+zevercom_ip: 172.17.0.192

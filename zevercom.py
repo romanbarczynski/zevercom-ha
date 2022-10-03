@@ -3,16 +3,9 @@ import json
 import time
 import requests
 import sys
+import yaml
 
-mqttc = mqtt.Client()
-
-# FIXME: config file
-mqttc.connect("mqtt")
-topic = "zevercom"
-did = "0xdeadbeef00000001"
-zevercom_ip = '172.17.0.192'
-
-def config(mqttc, topic, did, params):
+def configure(params):
     for param, name, device_class, unit_of_measurement, extra in params:
         data = {
             'availability': [{'topic': f'{topic}/bridge/state'}],
@@ -63,7 +56,25 @@ def get_data(ip):
     except Exception as e:
         return {'status': 'unavailable', 'error': str(e)}
 
-config(mqttc, topic, did, [
+
+def set_state(state):
+    print(f"{topic}/bridge/state", state)
+    mqttc.publish(f"{topic}/bridge/state", state)
+
+###
+
+conf = None
+with open("/etc/zevercom.conf", 'r') as f:
+    conf = yaml.safe_load(f)
+
+topic = conf.get('topic', 'zevercom')
+did = conf.get('device_id', '0xdeadbeef00000001')
+zevercom_ip = conf.get('zevercom_ip', '172.17.0.192')
+
+mqttc = mqtt.Client()
+mqttc.connect(conf.get('mqtt_server', 'mqtt'))
+
+configure([
     ['status', 'Status', None, None, None],
     ['inv_pac', 'Inverter PAC', 'power', 'W', None],
     ['e_today', 'Energy (Today)', 'energy', 'kWh', {'state_class': 'total_increasing'}],
@@ -73,17 +84,7 @@ config(mqttc, topic, did, [
 ])
 time.sleep(2)
 
-payload = 'online'
-print(f"{topic}/bridge/state", payload)
-mqttc.publish(f"{topic}/bridge/state", payload)
-
-payload = json.dumps({
-    'update': {
-        'status': 'available',
-    }
-})
-print(f"{topic}/{did}", payload)
-mqttc.publish(f"{topic}/{did}", payload)
+set_state('online')
 
 while True:
     try:
@@ -93,11 +94,7 @@ while True:
         mqttc.publish(f"{topic}/{did}", payload)
         time.sleep(59)
     except Exception as e:
-        payload = 'offline'
-        print(f"{topic}/bridge/state", payload)
-        mqttc.publish(f"{topic}/bridge/state", payload)
+        set_state('offline')
         break
 
-payload = 'offline'
-print(f"{topic}/bridge/state", payload)
-mqttc.publish(f"{topic}/bridge/state", payload)
+set_state('offline')
