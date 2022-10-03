@@ -66,7 +66,7 @@ def get_data(ip):
 config(mqttc, topic, did, [
     ['status', 'Status', None, None, None],
     ['inv_pac', 'Inverter PAC', 'power', 'W', None],
-    ['e_today', 'Energy (Today)', 'energy', 'kWh', {'state_class': 'total'}],
+    ['e_today', 'Energy (Today)', 'energy', 'kWh', {'state_class': 'total_increasing'}],
     ['line_pac', 'Line PAC', 'power', 'W', None],
     ['line_e_in', 'Line Energy Imported', 'energy', 'kWh', {'state_class': 'total_increasing'}],
     ['line_e_out', 'Line Energy Exported', 'energy', 'kWh', {'state_class': 'total_increasing'}],
