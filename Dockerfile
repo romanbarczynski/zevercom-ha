@@ -1,6 +1,8 @@
 FROM python:3.7-bullseye
 
-RUN pip install paho-mqtt requests
+COPY requirements.txt /tmp/
+
+RUN pip install -r /tmp/requirements.txt
 
 COPY entrypoint.sh zevercom.py /
 
